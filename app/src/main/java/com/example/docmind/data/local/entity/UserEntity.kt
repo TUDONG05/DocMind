@@ -28,6 +28,9 @@ data class UserEntity(
     @ColumnInfo(name = "avatarUrl")
     val avatarUrl: String? = null,
 
+    @ColumnInfo(name = "phone")
+    val phone: String? = null,
+
     @ColumnInfo(name = "createdAt")
     val createdAt: String
 )

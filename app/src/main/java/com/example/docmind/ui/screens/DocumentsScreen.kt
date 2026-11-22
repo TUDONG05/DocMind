@@ -1,5 +1,10 @@
 package com.example.docmind.ui.screens
 
+import android.net.Uri
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,22 +24,26 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.PictureAsPdf
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.UploadFile
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -45,27 +54,64 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.docmind.data.local.entity.DocumentEntity
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.example.docmind.util.FileUtils
 
 @Composable
 fun DocumentsScreen(
     documents: List<DocumentEntity>,
-    onUploadDocument: (fileName: String, fileType: String, fileSize: Long, sampleContent: String) -> Unit,
+    onUploadDocumentUri: (Uri) -> Unit,
     onDeleteDocument: (DocumentEntity) -> Unit
 ) {
-    var showUploadDialog by remember { mutableStateOf(false) }
-    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
+    val context = LocalContext.current
+    var searchQuery by remember { mutableStateOf("") }
+    var documentToDelete by remember { mutableStateOf<DocumentEntity?>(null) }
+    var documentToViewPdf by remember { mutableStateOf<DocumentEntity?>(null) }
+    var documentToViewWord by remember { mutableStateOf<DocumentEntity?>(null) }
+    var documentToViewExcel by remember { mutableStateOf<DocumentEntity?>(null) }
+
+    // Storage Access Framework Document Picker Launcher supporting PDF, Word, Excel
+    val safPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            onUploadDocumentUri(uri)
+        }
+    }
+
+    // Filter documents by search keyword with Vietnamese diacritic-insensitive normalization
+    val filteredDocuments = remember(documents, searchQuery) {
+        if (searchQuery.isBlank()) {
+            documents
+        } else {
+            val normalizedQuery = FileUtils.normalizeVietnamese(searchQuery)
+            documents.filter { doc ->
+                val normalizedFileName = FileUtils.normalizeVietnamese(doc.fileName)
+                val normalizedFileType = FileUtils.normalizeVietnamese(doc.fileType)
+                normalizedFileName.contains(normalizedQuery) || normalizedFileType.contains(normalizedQuery)
+            }
+        }
+    }
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showUploadDialog = true },
+                onClick = {
+                    safPickerLauncher.launch(
+                        arrayOf(
+                            "application/pdf",
+                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            "application/msword",
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            "application/vnd.ms-excel",
+                            "text/plain",
+                            "*/*"
+                        )
+                    )
+                },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
@@ -73,234 +119,309 @@ fun DocumentsScreen(
             }
         }
     ) { innerPadding ->
-        if (documents.isEmpty()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            // Search Bar
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        modifier = Modifier
-                            .size(72.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.secondaryContainer),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Default.UploadFile,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(36.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Kho tài liệu đang trống",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "Tải lên tài liệu PDF hoặc văn bản để DocMind phân tích và trả lời câu hỏi.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { showUploadDialog = true }) {
-                        Text("+ Thêm tài liệu mới")
-                    }
-                }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                items(documents) { doc ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(14.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            val isPdf = doc.fileType.contains("pdf", ignoreCase = true)
-                            Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isPdf) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = if (isPdf) Icons.Default.PictureAsPdf else Icons.Default.Description,
-                                    contentDescription = null,
-                                    tint = if (isPdf) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = doc.fileName,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                val sizeMb = (doc.fileSize * 10 / (1024 * 1024)) / 10.0
-                                val sizeFormatted = if (doc.fileSize >= 1024 * 1024) {
-                                    "${sizeMb} MB"
-                                } else {
-                                    "${doc.fileSize / 1024} KB"
-                                }
-
-                                Text(
-                                    text = "$sizeFormatted • ${dateFormat.format(Date(doc.uploadDate))}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Surface(
-                                        shape = RoundedCornerShape(4.dp),
-                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                                    ) {
-                                        Text(
-                                            text = doc.processingStatus,
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                                        )
-                                    }
-                                }
-                            }
-
-                            IconButton(onClick = { onDeleteDocument(doc) }) {
-                                Icon(
-                                    Icons.Default.DeleteOutline,
-                                    contentDescription = "Xóa tài liệu",
-                                    tint = MaterialTheme.colorScheme.outline
-                                )
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Tìm kiếm tài liệu học tập (PDF, Word, Excel)...") },
+                    leadingIcon = {
+                        Icon(Icons.Default.Search, contentDescription = "Tìm kiếm")
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = "" }) {
+                                Icon(Icons.Default.Clear, contentDescription = "Xóa tìm kiếm")
                             }
                         }
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            if (documents.isEmpty()) {
+                // Empty State
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.secondaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.UploadFile,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.size(36.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Kho tài liệu đang trống",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "Tải lên tài liệu PDF, Word hoặc Excel để học tập và hỏi đáp cùng DocMind.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Button(onClick = {
+                            safPickerLauncher.launch(
+                                arrayOf(
+                                    "application/pdf",
+                                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                    "application/msword",
+                                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                    "application/vnd.ms-excel",
+                                    "*/*"
+                                )
+                            )
+                        }) {
+                            Icon(Icons.Default.Add, contentDescription = null)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Chọn file từ thiết bị")
+                        }
+                    }
+                }
+            } else if (filteredDocuments.isEmpty()) {
+                // No Search Results State
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Không tìm thấy tài liệu phù hợp",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Thử tìm kiếm với từ khóa khác.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(filteredDocuments, key = { it.documentId }) { doc ->
+                        DocumentItemCard(
+                            document = doc,
+                            onView = {
+                                val name = doc.fileName.lowercase()
+                                val type = doc.fileType.lowercase()
+                                Log.d("DocMindDebug", "DocumentsScreen - onView clicked: fileName=${doc.fileName}, fileType=${doc.fileType}")
+                                when {
+                                    name.endsWith(".pdf") || type.contains("pdf") -> {
+                                        Log.d("DocMindDebug", "DocumentsScreen - Dispatched to PDF Viewer")
+                                        documentToViewPdf = doc
+                                    }
+                                    name.endsWith(".xlsx") || name.endsWith(".xls") || type.contains("sheet") || type.contains("excel") || type.contains("spreadsheet") -> {
+                                        Log.d("DocMindDebug", "DocumentsScreen - Dispatched to Excel Viewer")
+                                        documentToViewExcel = doc
+                                    }
+                                    name.endsWith(".docx") || name.endsWith(".doc") || type.contains("word") || type.contains("msword") || type.contains("document") -> {
+                                        Log.d("DocMindDebug", "DocumentsScreen - Dispatched to Word Viewer")
+                                        documentToViewWord = doc
+                                    }
+                                    else -> {
+                                        Log.w("DocMindDebug", "DocumentsScreen - Unsupported format: name=$name, type=$type")
+                                        Toast.makeText(context, "Định dạng file chưa được hỗ trợ xem nội dung.", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            },
+                            onDelete = {
+                                documentToDelete = doc
+                            }
+                        )
                     }
                 }
             }
         }
     }
 
-    if (showUploadDialog) {
-        UploadDocumentDialog(
-            onDismiss = { showUploadDialog = false },
-            onConfirm = { fileName, fileType, size, content ->
-                onUploadDocument(fileName, fileType, size, content)
-                showUploadDialog = false
+    // Delete Confirmation Dialog
+    val targetToDelete: DocumentEntity? = documentToDelete
+    if (targetToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { documentToDelete = null },
+            title = {
+                Text("Xác nhận xóa tài liệu", fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Text("Bạn có chắc chắn muốn xóa tài liệu '${targetToDelete.fileName}' khỏi danh sách học tập không?\n\n(Lưu ý: File gốc trên thiết bị của bạn sẽ không bị ảnh hưởng).")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDeleteDocument(targetToDelete)
+                        documentToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) {
+                    Text("Xóa tài liệu")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { documentToDelete = null }) {
+                    Text("Hủy")
+                }
             }
         )
+    }
+
+    // Viewers
+    documentToViewPdf?.let { doc ->
+        PdfViewerDialog(document = doc, onDismiss = { documentToViewPdf = null })
+    }
+
+    documentToViewWord?.let { doc ->
+        WordViewerDialog(document = doc, onDismiss = { documentToViewWord = null })
+    }
+
+    documentToViewExcel?.let { doc ->
+        ExcelViewerDialog(document = doc, onDismiss = { documentToViewExcel = null })
     }
 }
 
 @Composable
-fun UploadDocumentDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (fileName: String, fileType: String, fileSize: Long, sampleContent: String) -> Unit
+fun DocumentItemCard(
+    document: DocumentEntity,
+    onView: () -> Unit,
+    onDelete: () -> Unit
 ) {
-    var fileName by remember { mutableStateOf("") }
-    var selectedType by remember { mutableStateOf("application/pdf") }
-    var sampleContent by remember { mutableStateOf("") }
+    val name = document.fileName.lowercase()
+    val type = document.fileType.lowercase()
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text("Thêm tài liệu mới", fontWeight = FontWeight.Bold)
-        },
-        text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
-                    value = fileName,
-                    onValueChange = { fileName = it },
-                    label = { Text("Tên tài liệu") },
-                    placeholder = { Text("Ví dụ: Ke_Hoach_Kinh_Doanh.pdf") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+    val isPdf = name.endsWith(".pdf") || type.contains("pdf")
+    val isExcel = name.endsWith(".xlsx") || name.endsWith(".xls") || type.contains("sheet") || type.contains("excel") || type.contains("spreadsheet")
+    val isWord = name.endsWith(".docx") || name.endsWith(".doc") || type.contains("word") || type.contains("msword") || type.contains("document")
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "Định dạng tài liệu:",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(
+                            when {
+                                isPdf -> MaterialTheme.colorScheme.errorContainer
+                                isWord -> MaterialTheme.colorScheme.primaryContainer
+                                isExcel -> MaterialTheme.colorScheme.tertiaryContainer
+                                else -> MaterialTheme.colorScheme.surfaceVariant
+                            }
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    FilterChip(
-                        selected = selectedType == "application/pdf",
-                        onClick = { selectedType = "application/pdf" },
-                        label = { Text("PDF") }
-                    )
-                    FilterChip(
-                        selected = selectedType == "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                        onClick = { selectedType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
-                        label = { Text("Word (DOCX)") }
-                    )
-                    FilterChip(
-                        selected = selectedType == "text/plain",
-                        onClick = { selectedType = "text/plain" },
-                        label = { Text("TXT") }
+                    Icon(
+                        imageVector = when {
+                            isPdf -> Icons.Default.PictureAsPdf
+                            isWord -> Icons.Default.Description
+                            isExcel -> Icons.Default.GridOn
+                            else -> Icons.Default.Description
+                        },
+                        contentDescription = null,
+                        tint = when {
+                            isPdf -> MaterialTheme.colorScheme.error
+                            isWord -> MaterialTheme.colorScheme.primary
+                            isExcel -> MaterialTheme.colorScheme.tertiary
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        modifier = Modifier.size(24.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.width(12.dp))
 
-                OutlinedTextField(
-                    value = sampleContent,
-                    onValueChange = { sampleContent = it },
-                    label = { Text("Nội dung tóm tắt / Đoạn trích") },
-                    placeholder = { Text("Nhập nội dung mẫu của tài liệu...") },
-                    maxLines = 4,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = document.fileName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "${FileUtils.formatFileSize(document.fileSize)} • ${FileUtils.formatDate(document.uploadDate)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    if (fileName.isNotBlank()) {
-                        val extension = when (selectedType) {
-                            "application/pdf" -> if (fileName.endsWith(".pdf", ignoreCase = true)) "" else ".pdf"
-                            "text/plain" -> if (fileName.endsWith(".txt", ignoreCase = true)) "" else ".txt"
-                            else -> if (fileName.endsWith(".docx", ignoreCase = true)) "" else ".docx"
-                        }
-                        val finalName = "$fileName$extension"
-                        onConfirm(finalName, selectedType, 524288L, sampleContent)
-                    }
-                },
-                enabled = fileName.isNotBlank()
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Tải lên")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Hủy")
+                OutlinedButton(
+                    onClick = onView,
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.height(36.dp)
+                ) {
+                    Icon(Icons.Default.Visibility, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Xem tài liệu")
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        Icons.Default.DeleteOutline,
+                        contentDescription = "Xóa tài liệu",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
-    )
+    }
 }

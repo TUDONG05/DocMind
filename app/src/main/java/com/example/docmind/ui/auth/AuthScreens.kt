@@ -58,6 +58,7 @@ fun LoginScreen(
     isLoading: Boolean,
     errorMessage: String?,
     onLogin: (email: String, password: String) -> Unit,
+    onQuickDemoLogin: () -> Unit,
     onNavigateToRegister: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
@@ -191,6 +192,19 @@ fun LoginScreen(
                             Spacer(modifier = Modifier.width(8.dp))
                         }
                         Text("Đăng nhập", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    OutlinedButton(
+                        onClick = onQuickDemoLogin,
+                        enabled = !isLoading,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("⚡ Đăng nhập nhanh (Demo)", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }

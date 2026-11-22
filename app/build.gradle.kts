@@ -6,11 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.docmind"
-    compileSdk {
-        version = release(37) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.example.docmind"
@@ -63,6 +59,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation("io.coil-kt:coil-compose:2.7.0")
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.junit)

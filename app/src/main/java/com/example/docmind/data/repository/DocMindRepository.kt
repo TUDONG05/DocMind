@@ -33,6 +33,33 @@ class DocMindRepository(private val database: DocMindDatabase) {
     fun getUserWithDocuments(userId: Long): Flow<UserWithDocuments?> = userDao.getUserWithDocuments(userId)
     fun getUserWithConversations(userId: Long): Flow<UserWithConversations?> = userDao.getUserWithConversations(userId)
 
+    suspend fun updateUserProfile(userId: Long, fullName: String, email: String, phone: String?, avatarUrl: String?): Result<UserEntity> {
+        val trimmedName = fullName.trim()
+        val trimmedEmail = email.trim().lowercase()
+        val trimmedPhone = phone?.trim()
+
+        if (trimmedName.isBlank()) {
+            return Result.failure(IllegalArgumentException("Họ và tên không được để trống!"))
+        }
+        if (trimmedEmail.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches()) {
+            return Result.failure(IllegalArgumentException("Email không đúng định dạng!"))
+        }
+
+        val currentUser = userDao.findUserById(userId)
+            ?: return Result.failure(IllegalArgumentException("Không tìm thấy người dùng!"))
+
+        val updatedUser = currentUser.copy(
+            fullName = trimmedName,
+            email = trimmedEmail,
+            phone = trimmedPhone,
+            avatarUrl = avatarUrl ?: currentUser.avatarUrl
+        )
+
+        userDao.updateUser(updatedUser)
+        val refreshed = userDao.findUserById(userId) ?: updatedUser
+        return Result.success(refreshed)
+    }
+
     suspend fun register(fullName: String, email: String, password: String): Result<UserEntity> {
         val trimmedName = fullName.trim()
         val trimmedEmail = email.trim().lowercase()

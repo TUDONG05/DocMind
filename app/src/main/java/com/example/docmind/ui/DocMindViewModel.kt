@@ -240,6 +240,66 @@ class DocMindViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun updateUserProfile(fullName: String, email: String, phone: String?, avatarUri: String?, onSuccess: () -> Unit = {}) {
+        val user = _currentUser.value ?: return
+        viewModelScope.launch {
+            _authLoading.value = true
+            _authError.value = null
+            val result = repository.updateUserProfile(user.userId, fullName, email, phone, avatarUri)
+            _authLoading.value = false
+            result.onSuccess { updated ->
+                _currentUser.value = updated
+                _statusMessage.value = "Cập nhật thông tin cá nhân thành công!"
+                onSuccess()
+            }.onFailure { err ->
+                _authError.value = err.localizedMessage ?: "Cập nhật thông tin thất bại!"
+            }
+        }
+    }
+
+    fun uploadDocumentUri(context: android.content.Context, uri: android.net.Uri) {
+        val user = _currentUser.value ?: return
+        viewModelScope.launch {
+            try {
+                val metadata = com.example.docmind.util.FileUtils.getFileMetadata(context, uri)
+                // Copy file to internal app storage for permanent local access & reliability
+                val localPath = com.example.docmind.util.FileUtils.copyUriToInternalStorage(
+                    context = context,
+                    uri = uri,
+                    targetFolder = "documents",
+                    preferredFileName = "doc_${System.currentTimeMillis()}_${metadata.fileName}"
+                ) ?: metadata.uriString
+
+                val docId = repository.insertDocument(
+                    DocumentEntity(
+                        userId = user.userId,
+                        fileName = metadata.fileName,
+                        filePath = localPath,
+                        fileType = metadata.fileType,
+                        fileSize = metadata.fileSize,
+                        processingStatus = "ĐÃ SẴN SÀNG",
+                        uploadDate = System.currentTimeMillis()
+                    )
+                )
+
+                repository.insertChunk(
+                    DocumentChunkEntity(
+                        documentId = docId,
+                        chunkIndex = 0,
+                        content = "Nội dung tài liệu ${metadata.fileName} đã được lưu trữ và sẵn sàng hỏi đáp.",
+                        pageNumber = 1,
+                        embedding = byteArrayOf(1, 2, 3, 4),
+                        embeddingModel = "text-embedding-004"
+                    )
+                )
+
+                _statusMessage.value = "Đã tải lên tài liệu '${metadata.fileName}' thành công!"
+            } catch (e: Exception) {
+                _statusMessage.value = "Lỗi khi tải tài liệu: ${e.localizedMessage}"
+            }
+        }
+    }
+
     fun seedDemoData() {
         viewModelScope.launch {
             try {

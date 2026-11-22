@@ -103,6 +103,9 @@ fun DocMindApp(
                             onLogin = { email, password ->
                                 viewModel.login(email, password)
                             },
+                            onQuickDemoLogin = {
+                                viewModel.quickDemoLogin()
+                            },
                             onNavigateToRegister = {
                                 viewModel.clearAuthError()
                                 isRegistering = true
@@ -212,15 +215,18 @@ fun DocMindApp(
                     }
                 )
 
-                1 -> DocumentsScreen(
-                    documents = userDocs,
-                    onUploadDocument = { fileName, fileType, size, content ->
-                        viewModel.uploadDocument(fileName, fileType, size, content)
-                    },
-                    onDeleteDocument = { doc ->
-                        viewModel.deleteDocument(doc)
-                    }
-                )
+                1 -> {
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    DocumentsScreen(
+                        documents = userDocs,
+                        onUploadDocumentUri = { uri ->
+                            viewModel.uploadDocumentUri(context, uri)
+                        },
+                        onDeleteDocument = { doc ->
+                            viewModel.deleteDocument(doc)
+                        }
+                    )
+                }
 
                 2 -> ProfileScreen(
                     user = currentUser,
@@ -228,6 +234,9 @@ fun DocMindApp(
                     convCount = userConvs.size,
                     authLoading = authLoading,
                     authError = authError,
+                    onUpdateProfile = { fullName, email, phone, avatarUri ->
+                        viewModel.updateUserProfile(fullName, email, phone, avatarUri)
+                    },
                     onChangePassword = { oldPass, newPass ->
                         viewModel.changePassword(oldPass, newPass)
                     },
