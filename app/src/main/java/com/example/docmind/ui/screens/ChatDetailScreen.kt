@@ -48,6 +48,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.docmind.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -84,13 +86,13 @@ fun ChatDetailScreen(
                 title = {
                     Column {
                         Text(
-                            text = conversationDetails?.conversation?.title ?: "Đoạn chat",
+                            text = conversationDetails?.conversation?.title ?: stringResource(R.string.nav_chat),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1
                         )
                         Text(
-                            text = if (documents.isNotEmpty()) "${documents.size} tài liệu đính kèm" else "Hỏi đáp AI",
+                            text = if (documents.isNotEmpty()) stringResource(R.string.attached_documents, documents.size) else stringResource(R.string.ai_questions),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -98,7 +100,7 @@ fun ChatDetailScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.settings_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -120,7 +122,7 @@ fun ChatDetailScreen(
                     OutlinedTextField(
                         value = inputText,
                         onValueChange = { inputText = it },
-                        placeholder = { Text("Hỏi DocMind về tài liệu...") },
+                        placeholder = { Text(stringResource(R.string.ask_document)) },
                         maxLines = 4,
                         shape = RoundedCornerShape(24.dp),
                         modifier = Modifier.weight(1f)
@@ -142,7 +144,7 @@ fun ChatDetailScreen(
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.Send,
-                            contentDescription = "Gửi",
+                            contentDescription = stringResource(R.string.send),
                             tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
@@ -168,7 +170,7 @@ fun ChatDetailScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Tài liệu:",
+                            text = stringResource(R.string.documents_label),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant

@@ -53,6 +53,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.docmind.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -67,6 +69,7 @@ fun DocumentsScreen(
     onDeleteDocument: (DocumentEntity) -> Unit
 ) {
     val context = LocalContext.current
+    val unsupportedPreviewMessage = stringResource(R.string.unsupported_preview)
     var searchQuery by remember { mutableStateOf("") }
     var documentToDelete by remember { mutableStateOf<DocumentEntity?>(null) }
     var documentToViewPdf by remember { mutableStateOf<DocumentEntity?>(null) }
@@ -115,7 +118,7 @@ fun DocumentsScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Thêm tài liệu")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_document))
             }
         }
     ) { innerPadding ->
@@ -133,14 +136,14 @@ fun DocumentsScreen(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text("Tìm kiếm tài liệu học tập (PDF, Word, Excel)...") },
+                    placeholder = { Text(stringResource(R.string.document_search_hint)) },
                     leadingIcon = {
-                        Icon(Icons.Default.Search, contentDescription = "Tìm kiếm")
+                        Icon(Icons.Default.Search, contentDescription = stringResource(R.string.search))
                     },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
                             IconButton(onClick = { searchQuery = "" }) {
-                                Icon(Icons.Default.Clear, contentDescription = "Xóa tìm kiếm")
+                                Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.clear_search))
                             }
                         }
                     },
@@ -175,13 +178,13 @@ fun DocumentsScreen(
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Kho tài liệu đang trống",
+                            text = stringResource(R.string.empty_documents),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "Tải lên tài liệu PDF, Word hoặc Excel để học tập và hỏi đáp cùng DocMind.",
+                            text = stringResource(R.string.study_documents_description),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -200,7 +203,7 @@ fun DocumentsScreen(
                         }) {
                             Icon(Icons.Default.Add, contentDescription = null)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Chọn file từ thiết bị")
+                            Text(stringResource(R.string.pick_document))
                         }
                     }
                 }
@@ -214,13 +217,13 @@ fun DocumentsScreen(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "Không tìm thấy tài liệu phù hợp",
+                            text = stringResource(R.string.no_search_results),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Thử tìm kiếm với từ khóa khác.",
+                            text = stringResource(R.string.try_other_keywords),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -254,7 +257,7 @@ fun DocumentsScreen(
                                     }
                                     else -> {
                                         Log.w("DocMindDebug", "DocumentsScreen - Unsupported format: name=$name, type=$type")
-                                        Toast.makeText(context, "Định dạng file chưa được hỗ trợ xem nội dung.", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, unsupportedPreviewMessage, Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             },
@@ -274,10 +277,10 @@ fun DocumentsScreen(
         AlertDialog(
             onDismissRequest = { documentToDelete = null },
             title = {
-                Text("Xác nhận xóa tài liệu", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.delete_document_title), fontWeight = FontWeight.Bold)
             },
             text = {
-                Text("Bạn có chắc chắn muốn xóa tài liệu '${targetToDelete.fileName}' khỏi danh sách học tập không?\n\n(Lưu ý: File gốc trên thiết bị của bạn sẽ không bị ảnh hưởng).")
+                Text(stringResource(R.string.delete_document_message, targetToDelete.fileName))
             },
             confirmButton = {
                 Button(
@@ -290,12 +293,12 @@ fun DocumentsScreen(
                         contentColor = MaterialTheme.colorScheme.onError
                     )
                 ) {
-                    Text("Xóa tài liệu")
+                    Text(stringResource(R.string.delete_document))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { documentToDelete = null }) {
-                    Text("Hủy")
+                    Text(stringResource(R.string.settings_cancel))
                 }
             }
         )
@@ -406,7 +409,7 @@ fun DocumentItemCard(
                 ) {
                     Icon(Icons.Default.Visibility, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Xem tài liệu")
+                    Text(stringResource(R.string.view_document))
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -417,7 +420,7 @@ fun DocumentItemCard(
                 ) {
                     Icon(
                         Icons.Default.DeleteOutline,
-                        contentDescription = "Xóa tài liệu",
+                        contentDescription = stringResource(R.string.delete_document),
                         tint = MaterialTheme.colorScheme.error
                     )
                 }

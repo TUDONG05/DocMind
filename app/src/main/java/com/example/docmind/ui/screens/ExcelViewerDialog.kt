@@ -45,6 +45,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.docmind.R
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -63,6 +65,8 @@ fun ExcelViewerDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
+    val openFailureMessage = stringResource(R.string.excel_open_failed)
+    val legacyFormatMessage = stringResource(R.string.excel_legacy_unsupported)
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var excelSheets by remember { mutableStateOf<List<ExcelSheetData>>(emptyList()) }
@@ -73,7 +77,7 @@ fun ExcelViewerDialog(
         errorMessage = null
         if (document.fileName.endsWith(".xls", ignoreCase = true) && !document.fileName.endsWith(".xlsx", ignoreCase = true)) {
             isLoading = false
-            errorMessage = "Định dạng file Excel cũ (.xls) chưa được hỗ trợ trực tiếp. Vui lòng sử dụng file định dạng .xlsx."
+            errorMessage = legacyFormatMessage
             return@LaunchedEffect
         }
 
@@ -82,7 +86,7 @@ fun ExcelViewerDialog(
         result.onSuccess { sheets ->
             excelSheets = sheets
         }.onFailure { err ->
-            errorMessage = err.localizedMessage ?: "Không thể đọc nội dung file Excel này."
+            errorMessage = err.localizedMessage ?: openFailureMessage
         }
     }
 
@@ -103,7 +107,7 @@ fun ExcelViewerDialog(
                                     maxLines = 1
                                 )
                                 Text(
-                                    text = "Bảng tính Excel (XLSX)",
+                                    text = stringResource(R.string.excel_document),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -111,7 +115,7 @@ fun ExcelViewerDialog(
                         },
                         navigationIcon = {
                             IconButton(onClick = onDismiss) {
-                                Icon(Icons.Default.Close, contentDescription = "Đóng")
+                                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close))
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
@@ -152,7 +156,7 @@ fun ExcelViewerDialog(
                     ) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Đang đọc dữ liệu bảng tính...", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.excel_loading), style = MaterialTheme.typography.bodyMedium)
                     }
                 } else if (errorMessage != null) {
                     Column(
@@ -170,13 +174,13 @@ fun ExcelViewerDialog(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Không thể xem tài liệu",
+                            text = stringResource(R.string.preview_failed),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = errorMessage ?: "Lỗi không xác định",
+                            text = errorMessage ?: stringResource(R.string.unknown_preview_error),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -188,7 +192,7 @@ fun ExcelViewerDialog(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("Sheet trống.")
+                            Text(stringResource(R.string.sheet_empty))
                         }
                     } else {
                         Card(

@@ -1,5 +1,6 @@
 package com.example.docmind.ui
 
+import android.content.Intent
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,10 +34,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.docmind.R
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.docmind.settings.SettingsActivity
 import com.example.docmind.ui.auth.LoginScreen
 import com.example.docmind.ui.auth.RegisterScreen
 import com.example.docmind.ui.screens.ChatDetailScreen
@@ -58,9 +65,10 @@ fun DocMindApp(
     val selectedConvId by viewModel.selectedConversationId.collectAsState()
     val selectedConvDetails by viewModel.selectedConversationDetails.collectAsState()
 
+    val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
-    var isRegistering by remember { mutableStateOf(false) }
-    var selectedBottomNavIndex by remember { mutableIntStateOf(0) }
+    var isRegistering by rememberSaveable { mutableStateOf(false) }
+    var selectedBottomNavIndex by rememberSaveable { mutableIntStateOf(0) }
 
     LaunchedEffect(statusMessage) {
         statusMessage?.let {
@@ -128,7 +136,7 @@ fun DocMindApp(
     }
 
     // --- 3. MAIN CONSUMER APP (Khi đã đăng nhập) ---
-    val navTitles = listOf("Đoạn chat", "Tài liệu", "Tài khoản")
+    val navTitles = listOf(stringResource(R.string.nav_chat), stringResource(R.string.nav_documents), stringResource(R.string.nav_account))
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -137,9 +145,9 @@ fun DocMindApp(
                 title = {
                     Text(
                         text = when (selectedBottomNavIndex) {
-                            0 -> "Đoạn chat AI"
-                            1 -> "Kho tài liệu của tôi"
-                            else -> "Hồ sơ cá nhân"
+                            0 -> stringResource(R.string.chat_title)
+                            1 -> stringResource(R.string.documents_title)
+                            else -> stringResource(R.string.profile_title)
                         },
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
@@ -160,7 +168,7 @@ fun DocMindApp(
                     icon = {
                         Icon(
                             imageVector = if (selectedBottomNavIndex == 0) Icons.Default.ChatBubble else Icons.Default.ChatBubbleOutline,
-                            contentDescription = "Đoạn chat"
+                            contentDescription = stringResource(R.string.nav_chat)
                         )
                     },
                     label = { Text(navTitles[0]) }
@@ -172,7 +180,7 @@ fun DocMindApp(
                     icon = {
                         Icon(
                             imageVector = if (selectedBottomNavIndex == 1) Icons.Default.Folder else Icons.Default.FolderOpen,
-                            contentDescription = "Tài liệu"
+                            contentDescription = stringResource(R.string.nav_documents)
                         )
                     },
                     label = { Text(navTitles[1]) }
@@ -184,10 +192,21 @@ fun DocMindApp(
                     icon = {
                         Icon(
                             imageVector = if (selectedBottomNavIndex == 2) Icons.Default.Person else Icons.Default.PersonOutline,
-                            contentDescription = "Tài khoản"
+                            contentDescription = stringResource(R.string.nav_account)
                         )
                     },
                     label = { Text(navTitles[2]) }
+                )
+
+                NavigationBarItem(
+                    selected = false,
+                    onClick = {
+                        context.startActivity(Intent(context, SettingsActivity::class.java))
+                    },
+                    icon = {
+                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.nav_settings))
+                    },
+                    label = { Text(stringResource(R.string.nav_settings)) }
                 )
             }
         }

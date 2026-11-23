@@ -40,6 +40,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.docmind.R
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -56,6 +58,7 @@ fun PdfViewerDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
+    val openFailureMessage = stringResource(R.string.pdf_open_failed)
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var pdfPages by remember { mutableStateOf<List<Bitmap>>(emptyList()) }
@@ -68,7 +71,7 @@ fun PdfViewerDialog(
         result.onSuccess { pages ->
             pdfPages = pages
         }.onFailure { err ->
-            errorMessage = err.localizedMessage ?: "Không thể mở tập tin PDF này."
+            errorMessage = err.localizedMessage ?: openFailureMessage
         }
     }
 
@@ -88,7 +91,7 @@ fun PdfViewerDialog(
                                 maxLines = 1
                             )
                             Text(
-                                text = if (pdfPages.isNotEmpty()) "${pdfPages.size} trang" else "Đang nạp...",
+                                text = if (pdfPages.isNotEmpty()) stringResource(R.string.page_count, pdfPages.size) else stringResource(R.string.loading),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -96,7 +99,7 @@ fun PdfViewerDialog(
                     },
                     navigationIcon = {
                         IconButton(onClick = onDismiss) {
-                            Icon(Icons.Default.Close, contentDescription = "Đóng")
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close))
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -119,7 +122,7 @@ fun PdfViewerDialog(
                     ) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Đang đọc nội dung PDF...", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.pdf_loading), style = MaterialTheme.typography.bodyMedium)
                     }
                 } else if (errorMessage != null) {
                     Column(
@@ -137,13 +140,13 @@ fun PdfViewerDialog(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Không thể xem tài liệu",
+                            text = stringResource(R.string.preview_failed),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = errorMessage ?: "Lỗi không xác định",
+                            text = errorMessage ?: stringResource(R.string.unknown_preview_error),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

@@ -27,7 +27,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,6 +36,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.docmind.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -84,7 +85,7 @@ fun ProfileScreen(
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
-            text = user?.fullName ?: "Người dùng",
+            text = user?.fullName ?: stringResource(R.string.default_user),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
@@ -102,7 +103,7 @@ fun ProfileScreen(
             color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
         ) {
             Text(
-                text = "ID: #${user?.userId ?: 0} • Tham gia: ${user?.createdAt?.take(10) ?: "Hôm nay"}",
+                text = stringResource(R.string.profile_metadata, user?.userId ?: 0L, user?.createdAt?.take(10) ?: stringResource(R.string.today)),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
@@ -134,7 +135,7 @@ fun ProfileScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "Tài liệu",
+                        text = stringResource(R.string.nav_documents),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -159,7 +160,7 @@ fun ProfileScreen(
                         color = MaterialTheme.colorScheme.secondary
                     )
                     Text(
-                        text = "Đoạn chat",
+                        text = stringResource(R.string.nav_chat),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -190,7 +191,7 @@ fun ProfileScreen(
                 )
                 Spacer(modifier = Modifier.width(14.dp))
                 Text(
-                    text = "Đổi mật khẩu",
+                    text = stringResource(R.string.change_password),
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.weight(1f)
                 )
@@ -218,7 +219,7 @@ fun ProfileScreen(
         ) {
             Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Đăng xuất tài khoản", fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.logout), fontWeight = FontWeight.SemiBold)
         }
     }
 

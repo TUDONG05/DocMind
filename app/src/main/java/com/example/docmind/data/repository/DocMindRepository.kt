@@ -1,5 +1,7 @@
 package com.example.docmind.data.repository
 
+import androidx.annotation.StringRes
+import com.example.docmind.R
 import com.example.docmind.data.local.DocMindDatabase
 import com.example.docmind.data.local.entity.ConversationDocumentEntity
 import com.example.docmind.data.local.entity.ConversationEntity
@@ -14,6 +16,8 @@ import com.example.docmind.data.local.relation.DocumentWithConversations
 import com.example.docmind.data.local.relation.UserWithConversations
 import com.example.docmind.data.local.relation.UserWithDocuments
 import kotlinx.coroutines.flow.Flow
+
+class AuthException(@StringRes val messageRes: Int) : IllegalArgumentException()
 
 class DocMindRepository(private val database: DocMindDatabase) {
 
@@ -38,18 +42,18 @@ class DocMindRepository(private val database: DocMindDatabase) {
         val trimmedEmail = email.trim().lowercase()
 
         if (trimmedName.isBlank()) {
-            return Result.failure(IllegalArgumentException("Họ và tên không được để trống!"))
+            return Result.failure(AuthException(R.string.error_name_required))
         }
         if (trimmedEmail.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches()) {
-            return Result.failure(IllegalArgumentException("Email không đúng định dạng!"))
+            return Result.failure(AuthException(R.string.error_invalid_email))
         }
         if (password.length < 6) {
-            return Result.failure(IllegalArgumentException("Mật khẩu phải có ít nhất 6 ký tự!"))
+            return Result.failure(AuthException(R.string.error_password_short))
         }
 
         val existingUser = userDao.findUserByEmail(trimmedEmail)
         if (existingUser != null) {
-            return Result.failure(IllegalStateException("Email '$trimmedEmail' đã tồn tại trong hệ thống!"))
+            return Result.failure(AuthException(R.string.error_email_exists))
         }
 
         val passwordHash = com.example.docmind.util.PasswordHasher.hashPassword(password)
@@ -62,7 +66,7 @@ class DocMindRepository(private val database: DocMindDatabase) {
 
         val insertedId = userDao.insertUser(newUser)
         val createdUser = userDao.findUserById(insertedId)
-            ?: return Result.failure(IllegalStateException("Không thể tạo người dùng!"))
+            ?: return Result.failure(AuthException(R.string.error_create_user))
 
         return Result.success(createdUser)
     }
@@ -70,18 +74,18 @@ class DocMindRepository(private val database: DocMindDatabase) {
     suspend fun login(email: String, password: String): Result<UserEntity> {
         val trimmedEmail = email.trim().lowercase()
         if (trimmedEmail.isBlank()) {
-            return Result.failure(IllegalArgumentException("Vui lòng nhập Email!"))
+            return Result.failure(AuthException(R.string.error_email_required))
         }
         if (password.isBlank()) {
-            return Result.failure(IllegalArgumentException("Vui lòng nhập mật khẩu!"))
+            return Result.failure(AuthException(R.string.error_password_required))
         }
 
         val user = userDao.findUserByEmail(trimmedEmail)
-            ?: return Result.failure(IllegalArgumentException("Tài khoản với email này không tồn tại!"))
+            ?: return Result.failure(AuthException(R.string.error_account_missing))
 
         val isPasswordCorrect = com.example.docmind.util.PasswordHasher.verifyPassword(password, user.passwordHash)
         if (!isPasswordCorrect) {
-            return Result.failure(IllegalArgumentException("Mật khẩu không chính xác!"))
+            return Result.failure(AuthException(R.string.error_wrong_password))
         }
 
         return Result.success(user)
@@ -89,21 +93,21 @@ class DocMindRepository(private val database: DocMindDatabase) {
 
     suspend fun changePassword(userId: Long, oldPassword: String, newPassword: String): Result<Unit> {
         if (oldPassword.isBlank()) {
-            return Result.failure(IllegalArgumentException("Vui lòng nhập mật khẩu cũ!"))
+            return Result.failure(AuthException(R.string.error_old_password_required))
         }
         if (newPassword.length < 6) {
-            return Result.failure(IllegalArgumentException("Mật khẩu mới phải có ít nhất 6 ký tự!"))
+            return Result.failure(AuthException(R.string.error_new_password_short))
         }
         if (oldPassword == newPassword) {
-            return Result.failure(IllegalArgumentException("Mật khẩu mới phải khác mật khẩu hiện tại!"))
+            return Result.failure(AuthException(R.string.error_password_same))
         }
 
         val user = userDao.findUserById(userId)
-            ?: return Result.failure(IllegalArgumentException("Người dùng không tồn tại!"))
+            ?: return Result.failure(AuthException(R.string.error_user_missing))
 
         val isOldPasswordCorrect = com.example.docmind.util.PasswordHasher.verifyPassword(oldPassword, user.passwordHash)
         if (!isOldPasswordCorrect) {
-            return Result.failure(IllegalArgumentException("Mật khẩu hiện tại không chính xác!"))
+            return Result.failure(AuthException(R.string.error_wrong_old_password))
         }
 
         val newHash = com.example.docmind.util.PasswordHasher.hashPassword(newPassword)

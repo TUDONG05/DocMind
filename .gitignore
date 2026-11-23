@@ -10,6 +10,7 @@
 /.idea/deviceManager.xml
 /.idea/deploymentTargetSelector.xml
 /.idea/vcs.xml
+/.idea/codeStyles/
 .DS_Store
 /build
 /captures

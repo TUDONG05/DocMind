@@ -42,6 +42,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.docmind.R
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -60,6 +62,8 @@ fun WordViewerDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
+    val openFailureMessage = stringResource(R.string.word_open_failed)
+    val legacyFormatMessage = stringResource(R.string.word_legacy_unsupported)
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var wordContents by remember { mutableStateOf<List<WordContent>>(emptyList()) }
@@ -71,7 +75,7 @@ fun WordViewerDialog(
         errorMessage = null
         if (document.fileName.endsWith(".doc", ignoreCase = true) && !document.fileName.endsWith(".docx", ignoreCase = true)) {
             isLoading = false
-            errorMessage = "Định dạng file Word cũ (.doc) chưa được hỗ trợ trực tiếp. Vui lòng sử dụng file định dạng .docx."
+            errorMessage = legacyFormatMessage
             return@LaunchedEffect
         }
 
@@ -82,7 +86,7 @@ fun WordViewerDialog(
             wordContents = contents
         }.onFailure { err ->
             Log.e("DocMindDebug", "WordViewerDialog - Error parsing DOCX: ${err.localizedMessage}", err)
-            errorMessage = err.localizedMessage ?: "Không thể đọc nội dung file Word này."
+            errorMessage = err.localizedMessage ?: openFailureMessage
         }
     }
 
@@ -102,7 +106,7 @@ fun WordViewerDialog(
                                 maxLines = 1
                             )
                             Text(
-                                text = "Tài liệu Word (DOCX)",
+                                text = stringResource(R.string.word_document),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -110,7 +114,7 @@ fun WordViewerDialog(
                     },
                     navigationIcon = {
                         IconButton(onClick = onDismiss) {
-                            Icon(Icons.Default.Close, contentDescription = "Đóng")
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close))
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -133,7 +137,7 @@ fun WordViewerDialog(
                     ) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Đang đọc nội dung Word...", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.word_loading), style = MaterialTheme.typography.bodyMedium)
                     }
                 } else if (errorMessage != null) {
                     Column(
@@ -151,13 +155,13 @@ fun WordViewerDialog(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Không thể xem tài liệu",
+                            text = stringResource(R.string.preview_failed),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = errorMessage ?: "Lỗi không xác định",
+                            text = errorMessage ?: stringResource(R.string.unknown_preview_error),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
