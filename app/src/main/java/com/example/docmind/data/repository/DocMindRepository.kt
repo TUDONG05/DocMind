@@ -1,6 +1,8 @@
 package com.example.docmind.data.repository
 
 import androidx.annotation.StringRes
+import androidx.room.withTransaction
+import kotlinx.coroutines.CancellationException
 import com.example.docmind.R
 import com.example.docmind.data.local.DocMindDatabase
 import com.example.docmind.data.local.entity.ConversationDocumentEntity
@@ -113,6 +115,22 @@ class DocMindRepository(private val database: DocMindDatabase) {
         val newHash = com.example.docmind.util.PasswordHasher.hashPassword(newPassword)
         userDao.updatePassword(userId, newHash)
         return Result.success(Unit)
+    }
+
+    suspend fun updateProfile(userId: Long, fullName: String, avatarUrl: String?): Result<UserEntity> {
+        val name = fullName.trim()
+        if (name.isBlank()) return Result.failure(AuthException(R.string.error_name_required))
+        return try {
+            Result.success(database.withTransaction {
+                if (userDao.updateProfile(userId, name, avatarUrl) == 0) {
+                    throw AuthException(R.string.error_user_missing)
+                }
+                userDao.findUserById(userId) ?: throw AuthException(R.string.error_user_missing)
+            })
+        } catch (error: Exception) {
+            if (error is CancellationException) throw error
+            Result.failure(error)
+        }
     }
 
     // --- Document Operations ---

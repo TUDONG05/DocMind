@@ -38,6 +38,9 @@ interface UserDao {
     @Query("UPDATE Users SET passwordHash = :passwordHash WHERE userId = :userId")
     suspend fun updatePassword(userId: Long, passwordHash: String)
 
+    @Query("UPDATE Users SET fullName = :fullName, avatarUrl = :avatarUrl WHERE userId = :userId")
+    suspend fun updateProfile(userId: Long, fullName: String, avatarUrl: String?): Int
+
     @Query("SELECT * FROM Users ORDER BY userId DESC")
     fun getAllUsers(): Flow<List<UserEntity>>
 

@@ -180,4 +180,12 @@
     <string name="excel_document">Bảng tính Excel (XLSX)</string>
     <string name="excel_loading">Đang đọc dữ liệu bảng tính...</string>
     <string name="sheet_empty">Sheet trống.</string>
+    <string name="profile_edit">Chỉnh sửa hồ sơ</string>
+    <string name="profile_save">Lưu</string>
+    <string name="profile_saving">Đang lưu…</string>
+    <string name="profile_saved">Đã cập nhật hồ sơ</string>
+    <string name="profile_save_failed">Không thể cập nhật hồ sơ. Vui lòng thử lại.</string>
+    <string name="profile_choose_avatar">Chọn ảnh</string>
+    <string name="profile_avatar_description">Ảnh đại diện</string>
+    <string name="profile_avatar_failed">Không thể đọc ảnh này. Vui lòng chọn ảnh khác.</string>
 </resources>

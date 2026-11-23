@@ -58,6 +58,8 @@ fun DocMindApp(
     val currentUser by viewModel.currentUser.collectAsState()
     val authLoading by viewModel.authLoading.collectAsState()
     val authError by viewModel.authError.collectAsState()
+    val profileSaving by viewModel.profileSaving.collectAsState()
+    val profileError by viewModel.profileError.collectAsState()
     val statusMessage by viewModel.statusMessage.collectAsState()
 
     val userDocs by viewModel.userDocuments.collectAsState()
@@ -246,6 +248,10 @@ fun DocMindApp(
 
                 2 -> ProfileScreen(
                     user = currentUser,
+                    profileSaving = profileSaving,
+                    profileError = profileError,
+                    onSaveProfile = viewModel::updateProfile,
+                    onClearProfileError = viewModel::clearProfileError,
                     docCount = userDocs.size,
                     convCount = userConvs.size,
                     authLoading = authLoading,
