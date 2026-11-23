@@ -44,6 +44,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.docmind.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -69,7 +71,7 @@ fun DocumentsScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Thêm tài liệu")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_document))
             }
         }
     ) { innerPadding ->
@@ -98,19 +100,19 @@ fun DocumentsScreen(
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Kho tài liệu đang trống",
+                        text = stringResource(R.string.empty_documents),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Tải lên tài liệu PDF hoặc văn bản để DocMind phân tích và trả lời câu hỏi.",
+                        text = stringResource(R.string.empty_documents_description),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { showUploadDialog = true }) {
-                        Text("+ Thêm tài liệu mới")
+                        Text(stringResource(R.string.add_new_document))
                     }
                 }
             }
@@ -179,7 +181,10 @@ fun DocumentsScreen(
                                         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                                     ) {
                                         Text(
-                                            text = doc.processingStatus,
+                                            text = when (doc.processingStatus) {
+                                                "ĐÃ SẴN SÀNG", "COMPLETED", "READY" -> stringResource(R.string.ready)
+                                                else -> doc.processingStatus
+                                            },
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
@@ -191,7 +196,7 @@ fun DocumentsScreen(
                             IconButton(onClick = { onDeleteDocument(doc) }) {
                                 Icon(
                                     Icons.Default.DeleteOutline,
-                                    contentDescription = "Xóa tài liệu",
+                                    contentDescription = stringResource(R.string.delete_document),
                                     tint = MaterialTheme.colorScheme.outline
                                 )
                             }
@@ -225,15 +230,15 @@ fun UploadDocumentDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Thêm tài liệu mới", fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.new_document), fontWeight = FontWeight.Bold)
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = fileName,
                     onValueChange = { fileName = it },
-                    label = { Text("Tên tài liệu") },
-                    placeholder = { Text("Ví dụ: Ke_Hoach_Kinh_Doanh.pdf") },
+                    label = { Text(stringResource(R.string.document_name)) },
+                    placeholder = { Text(stringResource(R.string.document_example)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -241,7 +246,7 @@ fun UploadDocumentDialog(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Định dạng tài liệu:",
+                    text = stringResource(R.string.document_format),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -272,8 +277,8 @@ fun UploadDocumentDialog(
                 OutlinedTextField(
                     value = sampleContent,
                     onValueChange = { sampleContent = it },
-                    label = { Text("Nội dung tóm tắt / Đoạn trích") },
-                    placeholder = { Text("Nhập nội dung mẫu của tài liệu...") },
+                    label = { Text(stringResource(R.string.document_excerpt)) },
+                    placeholder = { Text(stringResource(R.string.document_excerpt_hint)) },
                     maxLines = 4,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -294,12 +299,12 @@ fun UploadDocumentDialog(
                 },
                 enabled = fileName.isNotBlank()
             ) {
-                Text("Tải lên")
+                Text(stringResource(R.string.upload))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Hủy")
+                Text(stringResource(R.string.settings_cancel))
             }
         }
     )

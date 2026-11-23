@@ -44,6 +44,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.docmind.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -87,7 +89,7 @@ fun LoginScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.AutoAwesome,
-                    contentDescription = "DocMind Logo",
+                    contentDescription = stringResource(R.string.logo_description),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(36.dp)
                 )
@@ -103,7 +105,7 @@ fun LoginScreen(
             )
 
             Text(
-                text = "Trợ lý AI Đọc hiểu & Hỏi đáp Tài liệu",
+                text = stringResource(R.string.auth_tagline),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -121,7 +123,7 @@ fun LoginScreen(
                         .padding(20.dp)
                 ) {
                     Text(
-                        text = "Đăng nhập tài khoản",
+                        text = stringResource(R.string.login_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -140,7 +142,7 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text("Email") },
+                        label = { Text(stringResource(R.string.email)) },
                         leadingIcon = {
                             Icon(Icons.Default.Email, contentDescription = null)
                         },
@@ -154,7 +156,7 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text("Mật khẩu") },
+                        label = { Text(stringResource(R.string.password)) },
                         leadingIcon = {
                             Icon(Icons.Default.Lock, contentDescription = null)
                         },
@@ -162,7 +164,7 @@ fun LoginScreen(
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                 Icon(
                                     imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = if (passwordVisible) "Ẩn mật khẩu" else "Hiện mật khẩu"
+                                    contentDescription = if (passwordVisible) stringResource(R.string.hide_password) else stringResource(R.string.show_password)
                                 )
                             }
                         },
@@ -190,7 +192,7 @@ fun LoginScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                         }
-                        Text("Đăng nhập", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.login), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
@@ -202,12 +204,12 @@ fun LoginScreen(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Chưa có tài khoản?",
+                    text = stringResource(R.string.no_account),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 TextButton(onClick = onNavigateToRegister) {
-                    Text("Đăng ký ngay", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.register_now), fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -226,9 +228,9 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var localError by remember { mutableStateOf<String?>(null) }
+    var localError by remember { mutableStateOf<Int?>(null) }
 
-    val displayError = errorMessage ?: localError
+    val displayError = errorMessage ?: localError?.let { stringResource(it) }
 
     Box(
         modifier = Modifier
@@ -252,7 +254,7 @@ fun RegisterScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Person,
-                    contentDescription = "Register",
+                    contentDescription = stringResource(R.string.register),
                     tint = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.size(32.dp)
                 )
@@ -261,14 +263,14 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Tạo tài khoản mới",
+                text = stringResource(R.string.register_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
 
             Text(
-                text = "Bắt đầu trải nghiệm quản lý tài liệu với AI",
+                text = stringResource(R.string.register_description),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -300,7 +302,7 @@ fun RegisterScreen(
                             fullName = it
                             localError = null
                         },
-                        label = { Text("Họ và tên") },
+                        label = { Text(stringResource(R.string.full_name)) },
                         leadingIcon = {
                             Icon(Icons.Default.Person, contentDescription = null)
                         },
@@ -316,7 +318,7 @@ fun RegisterScreen(
                             email = it
                             localError = null
                         },
-                        label = { Text("Email") },
+                        label = { Text(stringResource(R.string.email)) },
                         leadingIcon = {
                             Icon(Icons.Default.Email, contentDescription = null)
                         },
@@ -333,7 +335,7 @@ fun RegisterScreen(
                             password = it
                             localError = null
                         },
-                        label = { Text("Mật khẩu (tối thiểu 6 ký tự)") },
+                        label = { Text(stringResource(R.string.password_hint)) },
                         leadingIcon = {
                             Icon(Icons.Default.Lock, contentDescription = null)
                         },
@@ -359,7 +361,7 @@ fun RegisterScreen(
                             confirmPassword = it
                             localError = null
                         },
-                        label = { Text("Nhập lại mật khẩu") },
+                        label = { Text(stringResource(R.string.confirm_password)) },
                         leadingIcon = {
                             Icon(Icons.Default.LockReset, contentDescription = null)
                         },
@@ -374,7 +376,7 @@ fun RegisterScreen(
                     Button(
                         onClick = {
                             if (password != confirmPassword) {
-                                localError = "Mật khẩu xác nhận không khớp!"
+                                localError = R.string.password_mismatch
                                 return@Button
                             }
                             onRegister(fullName, email, password)
@@ -393,7 +395,7 @@ fun RegisterScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                         }
-                        Text("Đăng ký tài khoản", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.register), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
@@ -405,12 +407,12 @@ fun RegisterScreen(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Đã có tài khoản?",
+                    text = stringResource(R.string.has_account),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 TextButton(onClick = onNavigateToLogin) {
-                    Text("Đăng nhập ngay", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.login_now), fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -428,14 +430,14 @@ fun ChangePasswordDialog(
     var newPassword by remember { mutableStateOf("") }
     var confirmNewPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var localError by remember { mutableStateOf<String?>(null) }
+    var localError by remember { mutableStateOf<Int?>(null) }
 
-    val displayError = errorMessage ?: localError
+    val displayError = errorMessage ?: localError?.let { stringResource(it) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Đổi mật khẩu", fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.change_password), fontWeight = FontWeight.Bold)
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -454,7 +456,7 @@ fun ChangePasswordDialog(
                         oldPassword = it
                         localError = null
                     },
-                    label = { Text("Mật khẩu hiện tại") },
+                    label = { Text(stringResource(R.string.current_password)) },
                     singleLine = true,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -477,7 +479,7 @@ fun ChangePasswordDialog(
                         newPassword = it
                         localError = null
                     },
-                    label = { Text("Mật khẩu mới (ít nhất 6 ký tự)") },
+                    label = { Text(stringResource(R.string.new_password)) },
                     singleLine = true,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -492,7 +494,7 @@ fun ChangePasswordDialog(
                         confirmNewPassword = it
                         localError = null
                     },
-                    label = { Text("Xác nhận mật khẩu mới") },
+                    label = { Text(stringResource(R.string.confirm_new_password)) },
                     singleLine = true,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -504,7 +506,7 @@ fun ChangePasswordDialog(
             Button(
                 onClick = {
                     if (newPassword != confirmNewPassword) {
-                        localError = "Mật khẩu xác nhận không khớp!"
+                        localError = R.string.password_mismatch
                         return@Button
                     }
                     onChangePassword(oldPassword, newPassword)
@@ -519,12 +521,12 @@ fun ChangePasswordDialog(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                 }
-                Text("Cập nhật")
+                Text(stringResource(R.string.update))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !isLoading) {
-                Text("Hủy")
+                Text(stringResource(R.string.settings_cancel))
             }
         }
     )

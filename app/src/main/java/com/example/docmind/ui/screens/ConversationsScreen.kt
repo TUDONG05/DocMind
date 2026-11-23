@@ -44,6 +44,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.docmind.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -72,7 +74,7 @@ fun ConversationsScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Tạo cuộc trò chuyện mới")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.create_conversation))
             }
         }
     ) { innerPadding ->
@@ -101,19 +103,19 @@ fun ConversationsScreen(
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Chưa có cuộc trò chuyện nào",
+                        text = stringResource(R.string.empty_conversations),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Nhấn nút '+' phía dưới để tạo đoạn chat mới và hỏi đáp cùng trợ lý AI.",
+                        text = stringResource(R.string.empty_conversations_description),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { showCreateDialog = true }) {
-                        Text("+ Tạo đoạn chat mới")
+                        Text(stringResource(R.string.add_chat))
                     }
                 }
             }
@@ -158,13 +160,13 @@ fun ConversationsScreen(
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = conv.title ?: "Cuộc trò chuyện mới",
+                                    text = conv.title ?: stringResource(R.string.new_conversation),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "Cập nhật: ${dateFormat.format(Date(conv.updatedAt))}",
+                                    text = stringResource(R.string.updated_date, dateFormat.format(Date(conv.updatedAt))),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -173,7 +175,7 @@ fun ConversationsScreen(
                             IconButton(onClick = { onDeleteConversation(conv) }) {
                                 Icon(
                                     Icons.Default.DeleteOutline,
-                                    contentDescription = "Xóa cuộc trò chuyện",
+                                    contentDescription = stringResource(R.string.delete_conversation),
                                     tint = MaterialTheme.colorScheme.outline
                                 )
                             }
@@ -208,15 +210,15 @@ fun CreateConversationDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Tạo đoạn chat mới", fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.new_chat), fontWeight = FontWeight.Bold)
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Tiêu đề cuộc trò chuyện") },
-                    placeholder = { Text("Ví dụ: Nghiên cứu báo cáo AI...") },
+                    label = { Text(stringResource(R.string.conversation_title)) },
+                    placeholder = { Text(stringResource(R.string.conversation_example)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -224,7 +226,7 @@ fun CreateConversationDialog(
                 Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
-                    text = "Chọn tài liệu đính kèm để hỏi đáp:",
+                    text = stringResource(R.string.choose_documents),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -233,7 +235,7 @@ fun CreateConversationDialog(
 
                 if (documents.isEmpty()) {
                     Text(
-                        text = "Bạn chưa có tài liệu nào. Bạn vẫn có thể tạo cuộc trò chuyện và hỏi đáp bình thường.",
+                        text = stringResource(R.string.no_documents_chat),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.outline
                     )
@@ -286,12 +288,12 @@ fun CreateConversationDialog(
                     onConfirm(title, selectedDocIds.toList())
                 }
             ) {
-                Text("Bắt đầu chat")
+                Text(stringResource(R.string.start_chat))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Hủy")
+                Text(stringResource(R.string.settings_cancel))
             }
         }
     )
