@@ -212,15 +212,18 @@ fun DocMindApp(
                     }
                 )
 
-                1 -> DocumentsScreen(
-                    documents = userDocs,
-                    onUploadDocument = { fileName, fileType, size, content ->
-                        viewModel.uploadDocument(fileName, fileType, size, content)
-                    },
-                    onDeleteDocument = { doc ->
-                        viewModel.deleteDocument(doc)
-                    }
-                )
+                1 -> {
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    DocumentsScreen(
+                        documents = userDocs,
+                        onUploadDocumentUri = { uri ->
+                            viewModel.uploadDocumentUri(context, uri)
+                        },
+                        onDeleteDocument = { doc ->
+                            viewModel.deleteDocument(doc)
+                        }
+                    )
+                }
 
                 2 -> ProfileScreen(
                     user = currentUser,

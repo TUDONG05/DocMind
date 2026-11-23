@@ -253,6 +253,38 @@ class DocMindViewModel(application: Application) : AndroidViewModel(application)
 
     // --- Document Actions ---
 
+    fun uploadDocumentUri(context: android.content.Context, uri: android.net.Uri) {
+        val user = _currentUser.value ?: return
+        viewModelScope.launch {
+            try {
+                val metadata = com.example.docmind.util.FileUtils.getFileMetadata(context, uri)
+                val localPath = com.example.docmind.util.FileUtils.copyUriToInternalStorage(
+                    context = context,
+                    uri = uri,
+                    targetFolder = "documents",
+                    preferredFileName = "doc_${System.currentTimeMillis()}_${metadata.fileName}"
+                ) ?: metadata.uriString
+
+                val docId = repository.insertDocument(
+                    DocumentEntity(
+                        userId = user.userId,
+                        fileName = metadata.fileName,
+                        filePath = localPath,
+                        fileType = metadata.fileType,
+                        fileSize = metadata.fileSize,
+                        processingStatus = "ĐÃ SẴN SÀNG",
+                        uploadDate = System.currentTimeMillis()
+                    )
+                )
+
+                _statusMessage.value = "Đã tải lên tài liệu '${metadata.fileName}' thành công!"
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                _statusMessage.value = "Lỗi khi tải tài liệu: ${e.localizedMessage}"
+            }
+        }
+    }
+
     fun uploadDocument(
         fileName: String,
         fileType: String,
