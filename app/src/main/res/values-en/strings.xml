@@ -180,4 +180,12 @@
     <string name="excel_document">Excel workbook (XLSX)</string>
     <string name="excel_loading">Reading spreadsheet data...</string>
     <string name="sheet_empty">Empty sheet.</string>
+    <string name="profile_edit">Edit profile</string>
+    <string name="profile_save">Save</string>
+    <string name="profile_saving">Saving…</string>
+    <string name="profile_saved">Profile updated</string>
+    <string name="profile_save_failed">Could not update your profile. Please try again.</string>
+    <string name="profile_choose_avatar">Choose photo</string>
+    <string name="profile_avatar_description">Profile photo</string>
+    <string name="profile_avatar_failed">Could not read this photo. Please choose another image.</string>
 </resources>

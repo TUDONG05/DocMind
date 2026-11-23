@@ -1,9 +1,7 @@
 package com.example.docmind.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,13 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -38,10 +38,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.docmind.R
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.docmind.data.local.entity.UserEntity
 import com.example.docmind.ui.auth.ChangePasswordDialog
 
@@ -52,10 +50,15 @@ fun ProfileScreen(
     convCount: Int,
     authLoading: Boolean,
     authError: String?,
+    profileSaving: Boolean,
+    profileError: String?,
+    onSaveProfile: (String, String?, () -> Unit) -> Unit,
+    onClearProfileError: () -> Unit,
     onChangePassword: (oldPass: String, newPass: String) -> Unit,
     onLogout: () -> Unit
 ) {
     var showChangePassDialog by remember { mutableStateOf(false) }
+    var showEditProfile by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -66,21 +69,7 @@ fun ProfileScreen(
     ) {
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Avatar
-        Box(
-            modifier = Modifier
-                .size(88.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = (user?.fullName?.take(1) ?: "U").uppercase(),
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 36.sp
-            )
-        }
+        ProfileAvatar(user?.fullName ?: "U", user?.avatarUrl, Modifier.size(88.dp))
 
         Spacer(modifier = Modifier.height(14.dp))
 
@@ -170,6 +159,17 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        OutlinedButton(
+            onClick = { onClearProfileError(); showEditProfile = true },
+            enabled = user != null && !profileSaving && !authLoading,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(R.string.profile_edit))
+        }
+        Spacer(Modifier.height(12.dp))
+
         // Actions Menu
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -180,7 +180,7 @@ fun ProfileScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { showChangePassDialog = true }
+                    .clickable(enabled = !profileSaving) { showChangePassDialog = true }
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -208,6 +208,7 @@ fun ProfileScreen(
         // Logout Button
         Button(
             onClick = onLogout,
+            enabled = !profileSaving,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.errorContainer,
                 contentColor = MaterialTheme.colorScheme.onErrorContainer
@@ -221,6 +222,14 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.width(8.dp))
             Text(stringResource(R.string.logout), fontWeight = FontWeight.SemiBold)
         }
+    }
+
+    if (showEditProfile && user != null) {
+        EditProfileDialog(
+            user = user, saving = profileSaving, error = profileError,
+            onDismiss = { showEditProfile = false; onClearProfileError() },
+            onClearError = onClearProfileError, onSave = onSaveProfile
+        )
     }
 
     if (showChangePassDialog) {

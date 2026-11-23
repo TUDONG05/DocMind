@@ -1,6 +1,11 @@
 package com.example.docmind.ui
 
 import android.app.Application
+import android.net.Uri
+import com.example.docmind.data.local.profile.AvatarStorage
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import android.content.res.Configuration
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatDelegate
@@ -121,6 +126,47 @@ class DocMindViewModel(application: Application) : AndroidViewModel(application)
 
     fun clearAuthError() {
         _authError.value = null
+    }
+
+    private val _profileSaving = MutableStateFlow(false)
+    val profileSaving: StateFlow<Boolean> = _profileSaving.asStateFlow()
+    private val _profileError = MutableStateFlow<String?>(null)
+    val profileError: StateFlow<String?> = _profileError.asStateFlow()
+
+    fun clearProfileError() { _profileError.value = null }
+
+    fun updateProfile(fullName: String, avatarUri: String?, onSuccess: () -> Unit) {
+        val user = _currentUser.value ?: return
+        if (_profileSaving.value) return
+        if (fullName.isBlank()) {
+            _profileError.value = message(R.string.error_name_required)
+            return
+        }
+        _profileSaving.value = true
+        _profileError.value = null
+        viewModelScope.launch {
+            try {
+                val updated = withContext(Dispatchers.IO) {
+                    val storage = AvatarStorage(getApplication())
+                    val avatar = if (avatarUri != null) storage.save(user.userId, Uri.parse(avatarUri)) else user.avatarUrl
+                    val result = repository.updateProfile(user.userId, fullName, avatar)
+                    if (result.isFailure && avatarUri != null) storage.deleteOwned(avatar)
+                    val saved = result.getOrThrow()
+                    if (avatarUri != null) storage.deleteOwned(user.avatarUrl)
+                    saved
+                }
+                if (_currentUser.value?.userId == user.userId) {
+                    _currentUser.value = updated
+                    _statusMessage.value = message(R.string.profile_saved)
+                    onSuccess()
+                }
+            } catch (error: Exception) {
+                if (error is CancellationException) throw error
+                _profileError.value = authMessage(error, if (avatarUri != null) R.string.profile_avatar_failed else R.string.profile_save_failed)
+            } finally {
+                _profileSaving.value = false
+            }
+        }
     }
 
     // --- Authentication Actions ---
