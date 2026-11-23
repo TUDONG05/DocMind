@@ -2,25 +2,30 @@ package com.example.docmind
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import android.view.View
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
 import com.example.docmind.settings.SettingsActivity
 import com.example.docmind.settings.SettingsAwareActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import com.example.docmind.ui.DocMindApp
 
 class MainActivity : SettingsAwareActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
-        findViewById<View>(R.id.openSettings).setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
-        }
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        setContent {
+            MaterialTheme {
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    DocMindApp(
+                        onOpenSettings = {
+                            startActivity(Intent(this, SettingsActivity::class.java))
+                        }
+                    )
+                }
+            }
         }
     }
 }
