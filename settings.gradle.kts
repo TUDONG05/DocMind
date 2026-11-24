@@ -23,5 +23,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "DocMind"
-include(":app")
+include(":app", ":backend")
  

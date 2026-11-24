@@ -65,7 +65,8 @@ object FileUtils {
     /**
      * Copies a file from Uri to internal app storage
      */
-    fun copyUriToInternalStorage(context: Context, uri: Uri, targetFolder: String, preferredFileName: String): String? {
+    fun copyUriToInternalStorage(context: Context, uri: Uri, targetFolder: String, preferredFileName: String,
+        checkCancelled: () -> Unit = {}): String? {
         return try {
             val folder = File(context.filesDir, targetFolder)
             if (!folder.exists()) {
@@ -74,7 +75,14 @@ object FileUtils {
             val destinationFile = File(folder, preferredFileName)
             context.contentResolver.openInputStream(uri)?.use { input ->
                 FileOutputStream(destinationFile).use { output ->
-                    input.copyTo(output)
+                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                    while (true) {
+                        checkCancelled()
+                        val count = input.read(buffer)
+                        if (count < 0) break
+                        checkCancelled()
+                        output.write(buffer, 0, count)
+                    }
                 }
             }
             if (destinationFile.exists() && destinationFile.length() > 0) {
@@ -83,6 +91,7 @@ object FileUtils {
                 null
             }
         } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
             e.printStackTrace()
             null
         }
