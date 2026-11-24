@@ -1,16 +1,18 @@
 package com.example.docmind
 
+import com.example.docmind.view.MainActivity
+
 import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.example.docmind.settings.AppSettings
-import com.example.docmind.settings.SettingsRepository
-import com.example.docmind.settings.SharedPreferencesSettingsStorage
-import com.example.docmind.settings.TextSize
-import com.example.docmind.settings.ThemeMode
+import com.example.docmind.model.settings.AppSettings
+import com.example.docmind.model.settings.SettingsRepository
+import com.example.docmind.model.settings.SharedPreferencesSettingsStorage
+import com.example.docmind.model.settings.TextSize
+import com.example.docmind.model.settings.ThemeMode
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith

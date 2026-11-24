@@ -23,7 +23,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "QA_BASE_URL", "\"" + providers.gradleProperty("qaBaseUrl").orElse("http://127.0.0.1:8080").get() + "\"")
+        }
         release {
+            buildConfigField("String", "QA_BASE_URL", "\"" + providers.gradleProperty("qaBaseUrl").orElse("").get() + "\"")
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
@@ -42,10 +46,12 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)

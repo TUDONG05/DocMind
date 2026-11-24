@@ -6,10 +6,10 @@ import android.net.Uri
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.docmind.data.local.DocMindDatabase
-import com.example.docmind.data.local.entity.UserEntity
-import com.example.docmind.data.local.profile.AvatarStorage
-import com.example.docmind.data.repository.DocMindRepository
+import com.example.docmind.model.local.DocMindDatabase
+import com.example.docmind.model.local.entity.UserEntity
+import com.example.docmind.model.local.profile.AvatarStorage
+import com.example.docmind.model.repository.DocMindRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.*

@@ -4,19 +4,19 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.docmind.data.local.DocMindDatabase
-import com.example.docmind.data.local.dao.ConversationDao
-import com.example.docmind.data.local.dao.ConversationDocumentDao
-import com.example.docmind.data.local.dao.DocumentChunkDao
-import com.example.docmind.data.local.dao.DocumentDao
-import com.example.docmind.data.local.dao.MessageDao
-import com.example.docmind.data.local.dao.UserDao
-import com.example.docmind.data.local.entity.ConversationDocumentEntity
-import com.example.docmind.data.local.entity.ConversationEntity
-import com.example.docmind.data.local.entity.DocumentChunkEntity
-import com.example.docmind.data.local.entity.DocumentEntity
-import com.example.docmind.data.local.entity.MessageEntity
-import com.example.docmind.data.local.entity.UserEntity
+import com.example.docmind.model.local.DocMindDatabase
+import com.example.docmind.model.local.dao.ConversationDao
+import com.example.docmind.model.local.dao.ConversationDocumentDao
+import com.example.docmind.model.local.dao.DocumentChunkDao
+import com.example.docmind.model.local.dao.DocumentDao
+import com.example.docmind.model.local.dao.MessageDao
+import com.example.docmind.model.local.dao.UserDao
+import com.example.docmind.model.local.entity.ConversationDocumentEntity
+import com.example.docmind.model.local.entity.ConversationEntity
+import com.example.docmind.model.local.entity.DocumentChunkEntity
+import com.example.docmind.model.local.entity.DocumentEntity
+import com.example.docmind.model.local.entity.MessageEntity
+import com.example.docmind.model.local.entity.UserEntity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -172,7 +172,7 @@ class DocMindDatabaseTest {
 
     @Test
     fun testAuthenticationFlow() = runBlocking {
-        val repo = com.example.docmind.data.repository.DocMindRepository(db)
+        val repo = com.example.docmind.model.repository.DocMindRepository(db)
 
         // 1. Register new user
         val regResult = repo.register("Tran Thi C", "tranthic@example.com", "secret123")
