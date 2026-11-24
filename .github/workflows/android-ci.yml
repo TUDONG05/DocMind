@@ -49,7 +49,7 @@ jobs:
         run: >
           bash ./gradlew
           --no-daemon --stacktrace --continue
-          :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
+          :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :backend:test
 
       - name: Upload test and lint reports
         if: ${{ !cancelled() }}
@@ -59,6 +59,8 @@ jobs:
           path: |
             app/build/reports/
             app/build/test-results/testDebugUnitTest/
+            backend/build/reports/
+            backend/build/test-results/test/
           if-no-files-found: ignore
           retention-days: 7
 
